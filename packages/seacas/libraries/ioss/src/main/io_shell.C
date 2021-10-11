@@ -33,7 +33,7 @@
 
 namespace {
   std::string codename;
-  std::string version = "6.0";
+  std::string version = "6.1 (2021/09/09)";
 
   bool mem_stats = false;
 
@@ -407,7 +407,6 @@ namespace {
   void file_compare(IOShell::Interface &interFace, int rank)
   {
     Ioss::PropertyManager properties = set_properties(interFace);
-    int                   int_byte_size_api;
     for (const auto &inpfile : interFace.inputFile) {
 
       //========================================================================
@@ -466,7 +465,7 @@ namespace {
 
       // Get integer size being used on input file #1 and set it in
       // the interFace.
-      int_byte_size_api = dbi1->int_byte_size_api();
+      int int_byte_size_api = dbi1->int_byte_size_api();
       if (int_byte_size_api == 8) {
         interFace.ints_64_bit = true;
       }

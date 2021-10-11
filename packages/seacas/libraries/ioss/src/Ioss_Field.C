@@ -21,27 +21,14 @@ namespace {
   size_t internal_get_size(Ioss::Field::BasicType type, size_t count,
                            const Ioss::VariableType *storage);
 
-  std::string type_string(Ioss::Field::BasicType type)
-  {
-    switch (type) {
-    case Ioss::Field::REAL: return std::string("real");
-    case Ioss::Field::INTEGER: return std::string("integer");
-    case Ioss::Field::INT64: return std::string("64-bit integer");
-    case Ioss::Field::COMPLEX: return std::string("complex");
-    case Ioss::Field::STRING: return std::string("string");
-    case Ioss::Field::CHARACTER: return std::string("char");
-    case Ioss::Field::INVALID: return std::string("invalid");
-    default: return std::string("internal error");
-    }
-  }
-
   void error_message(const Ioss::Field &field, Ioss::Field::BasicType requested_type)
   {
     std::ostringstream errmsg;
     fmt::print(errmsg,
                "ERROR: For field named '{}', code requested value of type '{}', but field type is "
                "'{}'. Types must match\n",
-               field.get_name(), type_string(requested_type), type_string(field.get_type()));
+               field.get_name(), Ioss::Field::type_string(requested_type),
+               Ioss::Field::type_string(field.get_type()));
     IOSS_ERROR(errmsg);
   }
 } // namespace
@@ -187,7 +174,7 @@ size_t Ioss::Field::get_size() const
 
     new_this->transCount_   = rawCount_;
     new_this->transStorage_ = rawStorage_;
-    for (auto my_transform : transforms_) {
+    for (auto &my_transform : transforms_) {
       new_this->transCount_   = my_transform->output_count(transCount_);
       new_this->transStorage_ = my_transform->output_storage(transStorage_);
       size_t size             = internal_get_size(type_, transCount_, transStorage_);
@@ -230,7 +217,7 @@ bool Ioss::Field::transform(void *data)
   transStorage_ = rawStorage_;
   transCount_   = rawCount_;
 
-  for (auto my_transform : transforms_) {
+  for (auto &my_transform : transforms_) {
     my_transform->execute(*this, data);
 
     transStorage_ = my_transform->output_storage(transStorage_);
@@ -294,6 +281,22 @@ bool Ioss::Field::operator==(const Ioss::Field &rhs) const { return equal_(rhs, 
 bool Ioss::Field::operator!=(const Ioss::Field &rhs) const { return !(*this == rhs); }
 
 bool Ioss::Field::equal(const Ioss::Field &rhs) const { return equal_(rhs, false); }
+
+std::string Ioss::Field::type_string() const { return type_string(get_type()); }
+
+std::string Ioss::Field::type_string(Ioss::Field::BasicType type)
+{
+  switch (type) {
+  case Ioss::Field::REAL: return std::string("real");
+  case Ioss::Field::INTEGER: return std::string("integer");
+  case Ioss::Field::INT64: return std::string("64-bit integer");
+  case Ioss::Field::COMPLEX: return std::string("complex");
+  case Ioss::Field::STRING: return std::string("string");
+  case Ioss::Field::CHARACTER: return std::string("char");
+  case Ioss::Field::INVALID: return std::string("invalid");
+  default: return std::string("internal error");
+  }
+}
 
 namespace {
   size_t internal_get_size(Ioss::Field::BasicType type, size_t count,
